@@ -12,6 +12,14 @@ public class ExpressionParser implements Aggregate{
     private static String operators = "+-*/^";
     private static String delimiters = "() " + operators;
 
+
+    /**
+     * This method checks whether char is a delimiter
+     *
+     * @param token                 one char in expression(current character)
+     * @return return result of checking if this character is a Delimiter.
+     *
+     */
     private static boolean isDelimiter(String token) {
         if (token.length() != 1) return false;
         for (int i = 0; i < delimiters.length(); i++) {
@@ -20,22 +28,40 @@ public class ExpressionParser implements Aggregate{
         return false;
     }
 
+    /**
+     * This method checks whether char is an operator
+     *
+     * @param token                 one char in expression(current character)
+     * @return return result of checking if this character is a Operator.
+     *
+     */
     private static boolean isOperator(String token) {
         for (int i = 0; i < operators.length(); i++) {
             if (token.charAt(0) == operators.charAt(i)) return true;
         }
         return false;
     }
-
-
+    /**
+     * This method defines a priority of operation
+     *
+     * @param token                 one char in expression(current character)
+     * @return return priority of current operation, bigger priority - more important operation.
+     *
+     */
     private static int priority(String token) {
-        if (token.equals("(")) return 1;
+        if (token.equals("(") || token.equals(")")) return 1;
         if (token.equals("+") || token.equals("-")) return 2;
         if (token.equals("*") || token.equals("/")) return 3;
         if (token.equals("^")) return 4;
         return 5;
     }
-
+    /**
+     * This main method converts a expression from infix notation to RPN (postfix notation)
+     *
+     * @param infix                 one char in expression(current character)
+     * @return return result of converting expression from infix notation to RPN.
+     *
+     */
     public String parse(String infix) {
         List<String> postfix = new ArrayList<>();
         Deque<String> stack = new ArrayDeque<>();
@@ -44,7 +70,6 @@ public class ExpressionParser implements Aggregate{
         while (tokenizer.hasMoreTokens()) {
             curr = tokenizer.nextToken();
             if (!tokenizer.hasMoreTokens() && isOperator(curr)) {
-                View.printMessage(View.INCORRECT_EXPR);
                 return View.ERROR;
             }
             if (curr.equals(" ")) continue;
@@ -54,7 +79,6 @@ public class ExpressionParser implements Aggregate{
                     while (!stack.peek().equals("(")) {
                         postfix.add(stack.pop());
                         if (stack.isEmpty()) {
-                            View.printMessage(View.BRACKETS_ERR);
                             return View.ERROR;
                         }
                     }
@@ -78,13 +102,16 @@ public class ExpressionParser implements Aggregate{
         while (!stack.isEmpty()) {
             if (isOperator(stack.peek())) postfix.add(stack.pop());
             else {
-                View.printMessage(View.BRACKETS_ERR);
                 return View.ERROR;
             }
         }
         return converListToString(postfix);
     }
 
+    /**
+     * This method converts all expressions in the list
+     *
+     * */
     public void parseAll(){
         Iterator it = new InfixExpressionIterator();
         while (it.hasNext()) {
@@ -92,7 +119,9 @@ public class ExpressionParser implements Aggregate{
             postfixExpressions.add(temp);
         }
     }
-
+    /**
+     * This method prints all of converted exprssions
+     */
     public void printPostfixExpressions(){
         Iterator pit = new PostfixExpressionIterator();
         while (pit.hasNext()){
@@ -102,6 +131,13 @@ public class ExpressionParser implements Aggregate{
         }
     }
 
+    /**
+     * This util method converts a builded List<String> to a String
+     *
+     * @param postfix            list of postfix expression
+     * @return expression in one String
+     *
+     */
     public String converListToString(List<String> postfix){
         StringBuilder res = new StringBuilder("");
         for(String s : postfix){
@@ -118,13 +154,6 @@ public class ExpressionParser implements Aggregate{
     public void addExpressionToList(String exp){
         expressions.add(exp);
     }
-    public List<String> getListExpressions(){
-        return expressions;
-    }
-
-    public String getExpressionByIndex(int index){
-        return expressions.get(index);
-    }
 
     @Override
     public Iterator getInfixIterator() {
@@ -134,6 +163,10 @@ public class ExpressionParser implements Aggregate{
     public Iterator getPostfixIterator() {
         return new PostfixExpressionIterator();
     }
+    /**
+     * This is an implementation of a design pattern Iterator
+
+     */
     private class InfixExpressionIterator implements Iterator{
         int index = 0;
 
